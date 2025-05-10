@@ -1,7 +1,10 @@
 const Comment = require('../models/Comment');
 const { Dropbox } = require('@dropbox/dropbox-sdk');
-const dropbox = new Dropbox({ accessToken: process.env.DROPBOX_TOKEN });({
-  token: process.env.DROPBOX_TOKEN
+const fetch = require('isomorphic-fetch');
+
+const dropbox = new Dropbox({
+  accessToken: process.env.DROPBOX_TOKEN,
+  fetch: fetch
 });
 
 exports.createComment = async (req, res) => {
@@ -11,22 +14,19 @@ exports.createComment = async (req, res) => {
 
     if (req.file) {
       const filePath = `/uploads/${Date.now()}_${req.file.originalname}`;
-      await new Promise((resolve, reject) => {
-        dropbox({
-          resource: 'files/upload',
-          parameters: {
-            path: filePath,
-            mode: 'add',
-            autorename: true,
-            mute: false
-          },
-          readStream: req.file.buffer
-        }, (err, result) => {
-          if (err) return reject(err);
-          imageUrl = `https://dl.dropboxusercontent.com/s${result.path_display}`;
-          resolve();
+      try {
+        const response = await dropbox.filesUpload({
+          path: filePath,
+          contents: req.file.buffer,
+          mode: { '.tag': 'add' },
+          autorename: true,
+          mute: false
         });
-      });
+        imageUrl = `https://dl.dropboxusercontent.com/s${response.result.path_display}`;
+      } catch (err) {
+        console.error('Dropbox upload error:', err);
+        throw err;
+      }
     }
 
     const commentId = await Comment.create(thread_id, content, imageUrl);
