@@ -1,7 +1,11 @@
 const Thread = require('../models/Thread');
 const Comment = require('../models/Comment');
-const dropbox = require('dropbox-v2-api').authenticate({
-  token: process.env.DROPBOX_TOKEN
+const { Dropbox } = require('@dropbox/dropbox-sdk');
+const fetch = require('isomorphic-fetch');
+
+const dropbox = new Dropbox({
+  accessToken: process.env.DROPBOX_TOKEN,
+  fetch: fetch
 });
 
 exports.createThread = async (req, res) => {
@@ -11,22 +15,19 @@ exports.createThread = async (req, res) => {
 
     if (req.file) {
       const filePath = `/uploads/${Date.now()}_${req.file.originalname}`;
-      await new Promise((resolve, reject) => {
-        dropbox({
-          resource: 'files/upload',
-          parameters: {
-            path: filePath,
-            mode: 'add',
-            autorename: true,
-            mute: false
-          },
-          readStream: req.file.buffer
-        }, (err, result) => {
-          if (err) return reject(err);
-          imageUrl = `https://dl.dropboxusercontent.com/s${result.path_display}`;
-          resolve();
+      try {
+        const response = await dropbox.filesUpload({
+          path: filePath,
+          contents: req.file.buffer,
+          mode: { '.tag': 'add' },
+          autorename: true,
+          mute: false
         });
-      });
+        imageUrl = `https://dl.dropboxusercontent.com/s${response.result.path_display}`;
+      } catch (err) {
+        console.error('Dropbox upload error:', err);
+        throw err;
+      }
     }
 
     const threadId = await Thread.create(board_id, title, content, imageUrl);
@@ -41,9 +42,7 @@ exports.getThread = async (req, res) => {
     const thread = await Thread.getById(req.params.id);
     if (!thread) return res.status(404).json({ error: 'Thread not found' });
     
-    // Increment view count
     await Thread.incrementViews(req.params.id);
-    
     res.json(thread);
   } catch (err) {
     res.status(500).json({ error: err.message });
