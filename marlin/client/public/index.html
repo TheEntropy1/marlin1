@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Marlin - A premium imageboard web application"
+    />
+    <title>Marlin</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Favicon (replace with your own) -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Tailwind CSS (if using JIT) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              beige: {
+                100: '#f5f5f0',
+                200: '#e8e8d8',
+                300: '#dcdcc0',
+              },
+              'dark-brown': {
+                300: '#8b7355',
+                600: '#5a4a3a',
+                700: '#3a2e24',
+                800: '#1a1612',
+              },
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-beige-100 text-dark-brown-800">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    
+    <!-- Production error tracking (optional) -->
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        if (window.Sentry) {
+          Sentry.captureException(error);
+        }
+        console.error("Application error:", error);
+      };
+    </script>
+  </body>
+</html>
