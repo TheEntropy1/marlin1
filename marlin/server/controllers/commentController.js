@@ -1,5 +1,6 @@
 const Comment = require('../models/Comment');
-const dropbox = require('dropbox-v2-api').authenticate({
+const { Dropbox } = require('@dropbox/dropbox-sdk');
+const dropbox = new Dropbox({ accessToken: process.env.DROPBOX_TOKEN });({
   token: process.env.DROPBOX_TOKEN
 });
 
